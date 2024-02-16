@@ -1,0 +1,11 @@
+{
+    "bot": {
+        // Your bot token on Revolt
+        "token": ""
+    },
+    "ai": {
+        // Your Gemini API
+        "token": "",
+        "model": "gemini-1.0-pro"
+    }
+}
