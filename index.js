@@ -4,7 +4,7 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { Client } from "revolt.js";
-import * as config from "./config.jsonc";
+import * as config from "./config.json";
 
 const client = new Client();
 const genAI = new GoogleGenerativeAI(config.bot.token);
