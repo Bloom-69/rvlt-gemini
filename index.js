@@ -4,20 +4,20 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { Client } from "revolt.js";
+
 import * as dotenv from "dotenv";
 dotenv.config();
 
 const client = new Client();
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
-//                                                        ^?
 const generationConfig = {
-  temperature: 0.9,
+  temperature: 1,
   topK: 1,
   topP: 1,
-  maxOutputTokens: 2048,
+  maxOutputTokens: 4096,
 };
-
 const safetySettings = [
   {
     category: HarmCategory.HARM_CATEGORY_HARASSMENT,
