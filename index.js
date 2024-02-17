@@ -9,15 +9,6 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import fetch from "node-fetch";
-import * as fs from "node:fs"
-import path from "node:path"
-// Sets the direction to save
-const dirPath = "./images";
-
-// Check if the direction contains. Otherwise create a new folder
-if (!fs.existsSync(dirPath)) {
-  fs.mkdirSync(dirPath);
-}
 
 const client = new Client();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_TOKEN);
