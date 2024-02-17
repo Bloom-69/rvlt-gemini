@@ -8,15 +8,26 @@ import { Client } from "revolt.js";
 import * as dotenv from "dotenv";
 dotenv.config();
 
-const client = new Client();
+import fetch from "node-fetch";
+import * as fs from "node:fs"
+import path from "node:path"
+// Sets the direction to save
+const dirPath = "./images";
 
+// Check if the direction contains. Otherwise create a new folder
+if (!fs.existsSync(dirPath)) {
+  fs.mkdirSync(dirPath);
+}
+
+const client = new Client();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_TOKEN);
-const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+const text_model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+const image_model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 const generationConfig = {
   temperature: 1,
   topK: 1,
   topP: 1,
-  maxOutputTokens: 4096,
+  maxOutputTokens: 512
 };
 const safetySettings = [
   {
@@ -39,28 +50,64 @@ const safetySettings = [
 
 const chatHistroy = []
 
-const chat = model.startChat({
+const text_chat = text_model.startChat({
   generationConfig,
   safetySettings,
   history: chatHistroy,
 });
 
+/**
+ * @param {Buffer} buffer - Buffer of file
+ * @param {string} mimeType - Mime type of the file buffer
+ */
+function fileToGenerativePart(buffer, mimeType) {
+  return {
+    inlineData: {
+      data: buffer.toString("base64"),
+      mimeType
+    },
+  };
+}
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user?.username}!`);
 });
 
 client.on("messageCreate", async (msg) => {
-  if (msg.author.bot) {
-    return 0;
-  } else {
-    chatHistroy.push({ role: "user", parts: msg.content })
+  try {
+    if (msg.author?.bot) {
+      return 0;
+    } else {
+      if (msg.attachments) {
+        const imageParts = [];
 
-    const result = await chat.sendMessage(msg.content);
-    const response = result.response;
-    msg.reply(response.text());
-    chatHistroy.push({ role: "model", parts: response.text() })
+        for (const attachment of msg.attachments) {
+          await fetch(attachment.createFileURL())
+            .then(async (response) => Buffer.from(await response.arrayBuffer()))
+            .then((buffer) => {
+              console.log(buffer);
+              if (!buffer) throw "Buffer is undefined"
+              const aiObject = fileToGenerativePart(Buffer.from(buffer), attachment.contentType)
+              console.log(aiObject)
+              imageParts.push(aiObject)
+            })
+
+          const result = await image_model.generateContent([msg.content, ...imageParts]);
+          const response = result.response;
+          msg.reply(response.text());
+        }
+      } else {
+        chatHistroy.push({ role: "user", parts: msg.content })
+        const result = await text_chat.sendMessage(msg.content);
+        const response = result.response;
+        await msg.reply(response.text());
+        chatHistroy.push({ role: "model", parts: response.text() })
+      }
+    }
+  } catch (e) {
+    console.log(e)
   }
+
 });
 
 client.loginBot(process.env.RVLT_TOKEN);
