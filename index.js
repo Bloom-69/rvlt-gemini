@@ -61,8 +61,6 @@ client.on("messageCreate", async (msg) => {
     msg.reply(response.text());
     chatHistroy.push({ role: "model", parts: response.text() })
   }
-
-  console.log(chatHistroy)
 });
 
 client.loginBot(process.env.RVLT_TOKEN);
