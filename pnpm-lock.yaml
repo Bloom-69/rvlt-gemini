@@ -8,6 +8,9 @@ dependencies:
   '@google/generative-ai':
     specifier: ^0.2.1
     version: 0.2.1
+  dotenv:
+    specifier: ^16.4.4
+    version: 16.4.4
   revolt.js:
     specifier: 7.0.0-beta.11
     version: 7.0.0-beta.11(typescript@5.1.6)
@@ -112,6 +115,11 @@ packages:
 
   /csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
+    dev: false
+
+  /dotenv@16.4.4:
+    resolution: {integrity: sha512-XvPXc8XAQThSjAbY6cQ/9PcBXmFoWuw1sQ3b8HqUCR6ziGXjkTi//kB9SWa2UwqlgdAIuRqAa/9hVljzPehbYg==}
+    engines: {node: '>=12'}
     dev: false
 
   /eventemitter3@5.0.1:

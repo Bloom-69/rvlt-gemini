@@ -4,12 +4,13 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { Client } from "revolt.js";
-import * as config from "./config.json";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 const client = new Client();
-const genAI = new GoogleGenerativeAI(config.bot.token);
-const model = genAI.getGenerativeModel({ model: config.ai.model });
-
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+//                                                        ^?
 const generationConfig = {
   temperature: 0.9,
   topK: 1,
@@ -36,11 +37,14 @@ const safetySettings = [
   },
 ];
 
+const chatHistroy = []
+
 const chat = model.startChat({
   generationConfig,
   safetySettings,
-  history: [],
+  history: chatHistroy,
 });
+
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user?.username}!`);
@@ -50,10 +54,15 @@ client.on("messageCreate", async (msg) => {
   if (msg.author.bot) {
     return 0;
   } else {
+    chatHistroy.push({ role: "user", parts: msg.content })
+
     const result = await chat.sendMessage(msg.content);
     const response = result.response;
     msg.reply(response.text());
+    chatHistroy.push({ role: "model", parts: response.text() })
   }
+
+  console.log(chatHistroy)
 });
 
-client.loginBot(config.bot.token);
+client.loginBot(process.env.RVLT_TOKEN);
