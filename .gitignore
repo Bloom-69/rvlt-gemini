@@ -133,4 +133,5 @@ dist
 config.json
 
 # Contents
-./images
+./images/*
+./images/*
