@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.2.1",
+    "colors": "^1.4.0",
     "dotenv": "^16.4.4",
     "node-fetch": "^3.3.2",
     "revolt.js": "7.0.0-beta.11"
