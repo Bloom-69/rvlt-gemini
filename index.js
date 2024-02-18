@@ -66,7 +66,6 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", async (msg) => {
-  console.log("[MESSAGE] New message: ", msg.content);
   try {
     if (msg.author?.bot) {
       console.log("[MESSAGE] Message is from a bot, ignoring...");
@@ -74,23 +73,33 @@ client.on("messageCreate", async (msg) => {
     } else {
       if (msg.attachments) {
         const imageParts = [];
-        console.log("[MESSAGE] Message has attachments, processing...");
+        console.log("[GEMINI_API] Using: ", image_model.model.toString());
+        console.log("[MESSAGE] This message has attachments: ", msg.attachments);
         for (const attachment of msg.attachments) {
+          console.log("[ATTACHMENT] Downloading attachment: ", attachment.url);
           await fetch(attachment.createFileURL())
             .then(async (response) => Buffer.from(await response.arrayBuffer()))
             .then((buffer) => {
               if (!buffer) throw new Error("[ERROR] Buffer is undefined");
               const aiObject = fileToGenerativePart(Buffer.from(buffer), attachment.contentType)
               imageParts.push(aiObject)
-            }).finally(() => {
-              console.log("[MESSAGE] Attachment has been processed");
+            }).finally(async () => {
+              if (imageParts.length > 4194304) {
+                throw new Error("[ERROR] Attachment is too large...");
+              } else {
+                console.log("[ATTACHMENT] Attachment has been downloaded: ", attachment.url);
+                chatHistroy.push({ role: "user", parts: [msg.content, imageParts] })
+                const result = await image_model.generateContent([msg.content, ...imageParts]);
+                console.log("[GEMINI_API] Gemini has responsed: ", result.response.text())
+                msg.reply(result.response.text());
+                chatHistroy.push({ role: "model", parts: result.response.text() });
+                console.log("[CHAT_HISTORY] Chat history has been updated: ", chatHistroy)
+              }
             })
-          
-          const result = await image_model.generateContent([msg.content, ...imageParts]);
-          console.log("[GEMINI_API] Gemini has responsed: ", result.response.text())
-          msg.reply(result.response.text());
         }
       } else {
+        console.log("[MESSAGE] New message: ", msg.content);
+        console.log("[GEMINI_API] Using: ", text_model.model.toString());
         chatHistroy.push({ role: "user", parts: msg.content })
         const result = await text_chat.sendMessage(msg.content);
         console.log("[GEMINI_API] Gemini has responsed: ", result.response.text())
@@ -100,8 +109,7 @@ client.on("messageCreate", async (msg) => {
       }
     }
   } catch (e) {
-    console.log("[ERROR] ",e)
-    throw e;
+    throw new Error("[ERROR]", e);
   }
 });
 
