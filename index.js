@@ -11,14 +11,15 @@ dotenv.config();
 import fetch from "node-fetch";
 
 const client = new Client();
+if (!process.env.GEMINI_API_TOKEN, process.env.GEMINI_API_TOKEN === "") throw new Error("[ERROR] Missing Gemini API token");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_TOKEN);
 const text_model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
 const image_model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 const generationConfig = {
-  temperature: 1,
-  topK: 1,
-  topP: 1,
-  maxOutputTokens: 512
+  temperature: process.env.TEMPERATURE,
+  topK: process.env.TOP_K,
+  topP: process.env.TOP_P,
+  maxOutputTokens: process.env.MAX_OUTPUT_TOKENS
 };
 const safetySettings = [
   {
@@ -61,44 +62,51 @@ function fileToGenerativePart(buffer, mimeType) {
 }
 
 client.on("ready", () => {
-  console.log(`Logged in as ${client.user?.username}!`);
+  console.log(`[READY] Logged in as ${client.user?.username}!`);
 });
 
 client.on("messageCreate", async (msg) => {
+  console.log("[MESSAGE] New message: ", msg.content);
   try {
     if (msg.author?.bot) {
+      console.log("[MESSAGE] Message is from a bot, ignoring...");
       return 0;
     } else {
       if (msg.attachments) {
         const imageParts = [];
-
+        console.log("[MESSAGE] Message has attachments, processing...");
         for (const attachment of msg.attachments) {
           await fetch(attachment.createFileURL())
             .then(async (response) => Buffer.from(await response.arrayBuffer()))
             .then((buffer) => {
-              console.log(buffer);
-              if (!buffer) throw "Buffer is undefined"
+              if (!buffer) throw new Error("[ERROR] Buffer is undefined");
               const aiObject = fileToGenerativePart(Buffer.from(buffer), attachment.contentType)
-              console.log(aiObject)
               imageParts.push(aiObject)
+            }).finally(() => {
+              console.log("[MESSAGE] Attachment has been processed");
             })
-
+          
           const result = await image_model.generateContent([msg.content, ...imageParts]);
-          const response = result.response;
-          msg.reply(response.text());
+          console.log("[GEMINI_API] Gemini has responsed: ", result.response.text())
+          msg.reply(result.response.text());
         }
       } else {
         chatHistroy.push({ role: "user", parts: msg.content })
         const result = await text_chat.sendMessage(msg.content);
-        const response = result.response;
-        await msg.reply(response.text());
-        chatHistroy.push({ role: "model", parts: response.text() })
+        console.log("[GEMINI_API] Gemini has responsed: ", result.response.text())
+        await msg.reply(result.response.text());
+        chatHistroy.push({ role: "model", parts: result.response.text() })
+        console.log("[CHAT_HISTORY] Chat history has been updated: ", chatHistroy)
       }
     }
   } catch (e) {
-    console.log(e)
+    console.log("[ERROR] ",e)
+    throw e;
   }
-
 });
 
-client.loginBot(process.env.RVLT_TOKEN);
+if (!process.env.RVLT_TOKEN, process.env.RVLT_TOKEN === "") {
+  throw new Error("[ERROR] Missing Revolt token");
+} else {
+  client.loginBot(process.env.RVLT_TOKEN);
+}
