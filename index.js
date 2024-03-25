@@ -14,7 +14,7 @@ import fetch from "node-fetch";
 const client = new Client();
 if (!process.env.GEMINI_API_TOKEN, process.env.GEMINI_API_TOKEN === "") throw new Error(colors.bgRed("ERROR"), "Missing Gemini API token");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_TOKEN);
-const text_model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+const text_model = genAI.getGenerativeModel({ model: "gemini-pro" });
 const image_model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 const generationConfig = {
   temperature: process.env.TEMPERATURE,
