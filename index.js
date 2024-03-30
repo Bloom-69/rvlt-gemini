@@ -40,13 +40,9 @@ const safetySettings = [
     threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
   },
 ];
-
-const chatHistroy = []
-
 const text_chat = text_model.startChat({
   generationConfig,
   safetySettings,
-  history: chatHistroy,
 });
 
 /**
@@ -97,24 +93,18 @@ client.on("messageCreate", async (msg) => {
                   throw new Error(color.bgRed("ERROR"), "Attachment is too large...");
                 } else {
                   console.log(colors.bgWhite("ATTACHMENT"), "Attachment has been downloaded: ", attachment.url);
-                  chatHistroy.push({ role: "user", parts: [msg.content, imageParts] })
                   const result = await image_model.generateContent([msg.content, ...imageParts]);
                   console.log(colors.bgMagenta("GEMINI_API"), "Gemini has responsed: ", result.response.text())
                   msg.reply(result.response.text());
-                  chatHistroy.push({ role: "model", parts: result.response.text() });
-                  console.log(colors.bgCyan("CHAT"), "Chat history has been updated: ", chatHistroy)
                 }
               })
           }
         } else {
           console.log(colors.bgWhite("MESSAGE"), "New message: ", msg.content);
           console.log(colors.bgMagenta("GEMINI_API"), "Using: ", text_model.model.toString());
-          chatHistroy.push({ role: "user", parts: msg.content })
           const result = await text_chat.sendMessage(msg.content);
           console.log(colors.bgMagenta("GEMINI_API"), "Gemini has responsed: ", result.response.text())
           await msg.reply(result.response.text());
-          chatHistroy.push({ role: "model", parts: result.response.text() })
-          console.log(colors.bgCyan("CHAT"), " Chat history has been updated: ", chatHistroy)
         }
       }
     } catch (e) {
@@ -145,24 +135,18 @@ client.on("messageCreate", async (msg) => {
                   throw new Error(color.bgRed("ERROR"), "Attachment is too large...");
                 } else {
                   console.log(colors.bgWhite("ATTACHMENT"), "Attachment has been downloaded: ", attachment.url);
-                  chatHistroy.push({ role: "user", parts: [msg.content, imageParts] })
                   const result = await image_model.generateContent([msg.content, ...imageParts]);
                   console.log(colors.bgMagenta("GEMINI_API"), "Gemini has responsed: ", result.response.text())
                   msg.reply(result.response.text());
-                  chatHistroy.push({ role: "model", parts: result.response.text() });
-                  console.log(colors.bgCyan("CHAT"), "Chat history has been updated: ", chatHistroy)
                 }
               })
           }
         } else {
           console.log(colors.bgWhite("MESSAGE"), "New message: ", msg.content);
           console.log(colors.bgMagenta("GEMINI_API"), "Using: ", text_model.model.toString());
-          chatHistroy.push({ role: "user", parts: msg.content })
           const result = await text_chat.sendMessage(msg.content);
           console.log(colors.bgMagenta("GEMINI_API"), "Gemini has responsed: ", result.response.text())
           await msg.reply(result.response.text());
-          chatHistroy.push({ role: "model", parts: result.response.text() })
-          console.log(colors.bgCyan("CHAT"), " Chat history has been updated: ", chatHistroy)
         }
       }
     } catch (e) {
