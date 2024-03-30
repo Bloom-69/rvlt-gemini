@@ -64,10 +64,16 @@ function fileToGenerativePart(buffer, mimeType) {
 
 client.on("ready", () => {
   console.log(colors.bgGreen.white("READY"), "Logged in as", colors.blue(client.user?.username));
+  console.log(colors.bgGreen.white("DEBUG"), `Using the following settings\nPREFIX: ${process.env.PREFIX}\nTemperature: ${process.env.TEMPERATURE}\nTOP K: ${process.env.TOP_K}\nTOP P: ${process.env.TOP_P}\nMAXIMUM TOKENS: ${process.env.MAX_OUTPUT_TOKENS}\nUSE PREFIX: ${process.env.USE_PREFIX}`);
 });
 
 client.on("messageCreate", async (msg) => {
-  if (process.env.USE_PREFIX == "true", msg.content.startsWith(process.env.PREFIX) == process.env.PREFIX) {
+  if (process.env.USE_PREFIX && !msg.content.startsWith(process.env.PREFIX)) {
+    console.log(colors.bgYellow("Ignoring message because it doesn't start with a prefix"));
+    return;
+  }
+
+  if (process.env.USE_PREFIX && msg.content.startsWith(process.env.PREFIX)) {
     try {
       if (msg.author?.bot) {
         console.log(colors.bgYellow("WARN"), "Message is from a bot, ignoring...");
