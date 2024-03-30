@@ -67,8 +67,7 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", async (msg) => {
-  if (process.env.USE_PREFIX, msg.content.startsWith(process.env.PREFIX) === process.env.PREFIX) 
-  {
+  if (process.env.USE_PREFIX == "true", msg.content.startsWith(process.env.PREFIX) == process.env.PREFIX) {
     try {
       if (msg.author?.bot) {
         console.log(colors.bgYellow("WARN"), "Message is from a bot, ignoring...");
@@ -115,7 +114,7 @@ client.on("messageCreate", async (msg) => {
     } catch (e) {
       console.error(colors.bgRed("ERROR"), e);
     }
-  } else{
+  } else {
     console.log(colors.bgYellow("WARN"), "USE_PREFIX is disabled, ignoring...");
     try {
       if (msg.author?.bot) {
